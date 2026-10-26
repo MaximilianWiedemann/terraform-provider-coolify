@@ -24,9 +24,15 @@ var resourceListPolicy = map[string]string{
 	"internal/service/application/common_schema.go:noindex_domains": "TestFlattenNoindexDomains_PreservesConfigOrder",
 	"internal/service/hetzner/resource.go:hetzner_firewall_ids":     "create-only; GET omitted; flatten does not overwrite",
 	"internal/service/hetzner/resource.go:hetzner_network_ids":      "create-only; GET omitted; flatten does not overwrite",
+	"internal/service/database/backup/resource.go:s3_storage_uuids": "API order is primary first; flatten replaces the list when GET returns it",
+	"internal/service/volumebackup/resource.go:s3_storage_uuids":    "upsert response order is primary first; there is no schedule GET",
 }
 
 var listAttrDecl = regexp.MustCompile(`(?m)^\s+"([^"]+)": schema\.(ListAttribute|ListNestedAttribute)\{`)
+
+// listAttrHelper matches a list built by s3StorageUUIDsAttribute so Schema
+// stays under the funlen line limit without dropping the attribute from this inventory.
+var listAttrHelper = regexp.MustCompile(`(?m)^\s+"([^"]+)": s3StorageUUIDsAttribute\(`)
 
 func TestResourceListAttributes_HaveOrderPolicy(t *testing.T) {
 	t.Parallel()
@@ -61,6 +67,13 @@ func TestResourceListAttributes_HaveOrderPolicy(t *testing.T) {
 		}
 		rel = filepath.ToSlash(rel)
 		for _, m := range listAttrDecl.FindAllSubmatch(data, -1) {
+			key := rel + ":" + string(m[1])
+			found[key] = true
+			if _, ok := resourceListPolicy[key]; !ok {
+				t.Errorf("resource list %s has no GET-order policy; add it to resourceListPolicy in list_flatten_policy_test.go", key)
+			}
+		}
+		for _, m := range listAttrHelper.FindAllSubmatch(data, -1) {
 			key := rel + ":" + string(m[1])
 			found[key] = true
 			if _, ok := resourceListPolicy[key]; !ok {
