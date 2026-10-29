@@ -558,7 +558,7 @@ func securityNetworkAttrs() map[string]schema.Attribute {
 			Optional:            true,
 		},
 		"ports_mappings": schema.StringAttribute{
-			MarkdownDescription: "Port mappings in `host:container` format, comma-separated (e.g., `8080:80` or `8080:80,8443:443`).",
+			MarkdownDescription: "Port mappings using Docker's short syntax, comma-separated (e.g., `8080:80`, `8080:80/udp`, `127.0.0.1:8080:80` or `8000-8010:8000-8010`). The Coolify public API only accepts `host:container` pairs; protocol suffixes, ranges and IP bindings are rejected with HTTP 422. Set those in the Coolify UI and import the application.",
 			Optional:            true,
 			Validators: []validator.String{
 				validate.PortMappings(),

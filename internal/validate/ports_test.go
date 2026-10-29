@@ -30,6 +30,27 @@ func TestPortMappings(t *testing.T) {
 		{"empty pair", "8080:5432,,8443:5433", true},
 		{"whitespace after comma", "8080:5432, 8443:5433", false},
 		{"whitespace around colon", " 8080 : 5432 ", false},
+
+		{"tcp protocol", "8080:80/tcp", false},
+		{"udp protocol", "8080:80/udp", false},
+		{"sctp protocol", "8080:80/sctp", false},
+		{"protocol mixed with plain", "8080:80/udp,8443:443", false},
+		{"unknown protocol", "8080:80/xyz", true},
+		{"uppercase protocol", "8080:80/UDP", true},
+		{"ipv4 host binding", "127.0.0.1:8080:80", false},
+		{"ipv4 host binding udp", "127.0.0.1:8080:80/udp", false},
+		{"ipv6 host binding", "[::1]:8080:80", false},
+		{"ipv6 empty host port", "[::1]::80", false},
+		{"invalid ipv6", "[::zz]:8080:80", true},
+		{"ipv4 without host port", "127.0.0.1:8080", true},
+		{"empty host port", ":80", false},
+		{"unbracketed ipv6", "::1:8080:80", true},
+		{"port range", "8000-8010:8000-8010", false},
+		{"port range with protocol", "8000-8010:8000-8010/udp", false},
+		{"port range mismatch", "8000-8010:80", true},
+		{"port range size mismatch", "8000-8005:8000-8010", true},
+		{"descending range", "8010-8000:8010-8000", true},
+		{"range port too high", "1-70000:1-70000", true},
 	}
 
 	for _, tt := range tests {

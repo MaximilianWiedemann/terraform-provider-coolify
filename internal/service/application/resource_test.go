@@ -2926,7 +2926,7 @@ func TestApplicationResource_ValidatePortsMappings(t *testing.T) {
 					ports_exposes  = "3000"
 					ports_mappings = "abc"
 				`),
-				ExpectError: regexp.MustCompile(`expected host:container format, got "abc"`),
+				ExpectError: regexp.MustCompile(`expected host:container format.*got "abc"`),
 			},
 		},
 	})
